@@ -1,0 +1,693 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dublin: Ireland's Most Stressed City</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700;1,900&family=Playfair+Display+SC:wght@700&family=Bebas+Neue&family=IM+Fell+English:ital@0;1&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --ink:#1C1A17;--ink-mid:#3D3A34;--ink-faint:#6B6760;--ink-ghost:#9A9690;
+  --paper:#F5F0E4;--paper-warm:#EDE7D5;--paper-card:#FAF7EE;
+  --rule:#1C1A17;--rule-light:#C8C2B0;
+  --red:#A32D2D;--red-mid:#E24B4A;--red-light:#F09595;
+  --amber:#854F0B;--amber-light:#FAC775;
+  --orange:#E85D24;--blue:#185FA5;
+  --green:#1E6B3C;--green-bg:#E6F5EC;
+  --orange-bg:#FFF3E0;
+}
+body{background:var(--paper);font-family:'IM Fell English',Georgia,serif;color:var(--ink);-webkit-font-smoothing:antialiased}
+.db{
+  max-width:1280px;margin:0 auto;padding:0 20px 32px;
+  background:var(--paper);
+  background-image:radial-gradient(circle,rgba(28,26,23,0.028) 1px,transparent 1px);
+  background-size:20px 20px;
+}
+
+/* ── MASTHEAD ── */
+.masthead{padding:18px 0 0;margin-bottom:14px}
+.mh-rule-heavy{height:6px;background:var(--ink);margin-bottom:3px}
+.mh-rule-thin{height:1.5px;background:var(--ink);margin-bottom:10px}
+.mh-rule-mid{height:2px;background:var(--ink);margin:10px 0 8px}
+.mh-rule-light{height:1px;background:var(--rule-light);margin-top:10px}
+.mh-top{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:6px}
+.mh-kicker{font-family:'Bebas Neue',sans-serif;font-size:11px;letter-spacing:.22em;color:var(--ink-mid)}
+.mh-date{font-family:'IM Fell English',serif;font-style:italic;font-size:11px;color:var(--ink-faint)}
+.mh-headline{
+  font-family:'Playfair Display',Georgia,serif;font-weight:900;
+  font-size:clamp(36px,5.2vw,66px);line-height:.93;
+  letter-spacing:-.025em;color:var(--ink);text-transform:uppercase
+}
+.mh-headline .stressed{color:var(--red);font-style:italic}
+.mh-deck{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px}
+.mh-sources{font-family:'IM Fell English',serif;font-style:italic;font-size:10.5px;color:var(--ink-faint)}
+.mh-sources span{margin-right:16px}
+.mh-stamp{
+  background:var(--red);color:var(--paper);
+  font-family:'Bebas Neue',sans-serif;font-size:11px;letter-spacing:.14em;
+  padding:4px 14px;border:1.5px solid #7a1f1f;
+  box-shadow:2px 2px 0 #7a1f1f;white-space:nowrap
+}
+
+/* ── KPI STRIP ── */
+.kpi-strip{display:grid;grid-template-columns:repeat(4,1fr);border:1.5px solid var(--ink);margin-bottom:14px;background:var(--paper-card)}
+.kpi-cell{padding:12px 16px;border-right:1px solid var(--rule-light)}
+.kpi-cell:last-child{border-right:none}
+.kpi-label{font-family:'Bebas Neue',sans-serif;font-size:10px;letter-spacing:.18em;color:var(--ink-faint);margin-bottom:5px}
+.kpi-val{font-family:'Playfair Display',serif;font-weight:900;font-size:30px;line-height:1;margin-bottom:3px}
+.kpi-ctx{font-family:'IM Fell English',serif;font-style:italic;font-size:12px;color:var(--ink-faint);line-height:1.4}
+.c-red{color:var(--red)}.c-amber{color:var(--amber)}.c-blue{color:var(--blue)}
+
+/* ── SECTION DIVIDER ── */
+.sec-div{display:flex;align-items:center;gap:10px;margin:14px 0 10px}
+.sec-div::before,.sec-div::after{content:'';flex:1;height:1px;background:var(--ink)}
+.sec-lbl{font-family:'Bebas Neue',sans-serif;font-size:10px;letter-spacing:.2em;color:var(--ink);white-space:nowrap}
+
+/* ── PANEL ── */
+.panel{background:var(--paper-card);border:1px solid var(--rule-light);padding:14px 16px;position:relative}
+.panel::after{content:'✦';position:absolute;top:7px;right:9px;font-size:7px;color:var(--rule-light)}
+.panel-title{font-family:'Playfair Display',serif;font-weight:700;font-size:15px;color:var(--ink);margin-bottom:2px;line-height:1.3}
+.panel-sub{font-family:'IM Fell English',serif;font-style:italic;font-size:12px;color:var(--ink-ghost);margin-bottom:10px;border-bottom:1px solid var(--rule-light);padding-bottom:6px}
+
+/* ── LAYOUTS ── */
+.row-3col{display:grid;grid-template-columns:210px 1fr 1fr;gap:12px;margin-bottom:12px;align-items:stretch}
+.row-2col{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
+.row-3col-eq{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:12px;align-items:stretch}
+
+/* ── BARS ── */
+.bar-r{display:flex;align-items:center;gap:8px;margin-bottom:7px}
+.bar-lbl{font-family:'IM Fell English',serif;font-size:12px;color:var(--ink-faint);width:90px;flex-shrink:0;text-align:right}
+.bar-lbl.hl{font-weight:700;color:var(--ink)}
+.bar-track{flex:1;height:13px;background:var(--paper-warm);border:0.5px solid var(--rule-light);overflow:hidden}
+.bar-fill{height:100%;transition:width .4s ease}
+.bar-pct{font-family:'Playfair Display',serif;font-size:12px;font-weight:700;width:34px;color:var(--ink)}
+.bar-pct.hl{color:var(--red)}
+
+/* ── ANNOTATIONS ── */
+.anno{background:#FDF3DC;border-left:3px solid var(--amber-light);padding:8px 10px;font-family:'IM Fell English',serif;font-style:italic;font-size:12px;color:#4a3000;line-height:1.5;margin-top:10px}
+.anno strong{font-style:normal;font-weight:700;color:#2e1d00}
+.anno.red{background:#FCEDEB;border-left-color:var(--red-light);color:#4a1010}
+.anno.red strong{color:#2e0808}
+
+/* ── PILLS ── */
+.pill{display:inline-block;font-family:'Bebas Neue',sans-serif;font-size:9px;letter-spacing:.12em;padding:3px 10px;border:1px solid var(--rule-light);margin-right:5px;margin-bottom:8px;cursor:pointer;color:var(--ink-faint);background:var(--paper)}
+.pill.active{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+
+/* ── VERDICT ── */
+.verdict{background:var(--ink);padding:14px 18px;height:100%}
+.verdict-hed{font-family:'Playfair Display SC',serif;font-size:11px;color:#E8E3D8;letter-spacing:.1em;margin-bottom:10px;border-bottom:1px solid #3a3830;padding-bottom:6px}
+.verdict-row{display:flex;gap:10px;align-items:flex-start;margin-bottom:8px}
+.verdict-row:last-child{margin-bottom:0}
+.v-dot{width:6px;height:6px;border-radius:50%;margin-top:5px;flex-shrink:0}
+.v-text{font-family:'IM Fell English',serif;font-style:italic;font-size:12px;color:#aaa;line-height:1.55}
+.v-text strong{font-style:normal;font-weight:700;color:#eee}
+
+/* ── INDEX CARDS ── */
+.idx-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:5px;margin-top:8px}
+.idx-card{border:1px solid var(--rule-light);padding:9px 5px;text-align:center;background:var(--paper-card)}
+.idx-num{font-family:'Playfair Display',serif;font-weight:900;font-size:20px;line-height:1}
+.idx-lbl{font-family:'IM Fell English',serif;font-style:italic;font-size:9px;color:var(--ink-ghost);margin-top:3px;line-height:1.3}
+
+/* ── SALARY / RENT TILES ── */
+.rs-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
+.rs-tile{border:1px solid var(--rule-light);padding:10px 12px;text-align:center}
+.rs-tile.green{background:var(--green-bg);border-color:#8EC9A8}
+.rs-tile.orange-t{background:var(--orange-bg);border-color:#F5C08A}
+.rs-tile-val{font-family:'Playfair Display',serif;font-weight:900;font-size:23px;line-height:1;margin-bottom:4px}
+.rs-tile.green .rs-tile-val{color:var(--green)}
+.rs-tile.orange-t .rs-tile-val{color:#C05800}
+.rs-tile-lbl{font-family:'IM Fell English',serif;font-size:12px;color:var(--ink-mid);line-height:1.5}
+.rs-tile-lbl em{font-style:italic;font-size:11px}
+.rs-tile.green .rs-tile-lbl em{color:var(--green)}
+.rs-tile.orange-t .rs-tile-lbl em{color:#C05800}
+.rs-footnote{font-family:'IM Fell English',serif;font-style:italic;font-size:11.5px;color:var(--ink-faint);margin-top:7px;border-top:1px solid var(--rule-light);padding-top:6px;line-height:1.5}
+.rs-footnote strong{font-style:normal;color:var(--ink-mid)}
+
+/* ── DONUT LEGEND ── */
+.donut-legend{display:grid;grid-template-columns:1fr 1fr;gap:4px 10px;align-content:start}
+.dl-item{display:flex;align-items:center;gap:5px;font-family:'IM Fell English',serif;font-size:12px;color:var(--ink-faint);line-height:1.3}
+.dl-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0}
+
+/* ── MAP PILLS ── */
+.map-pill{font-family:'Bebas Neue',sans-serif;font-size:9px;letter-spacing:.14em;padding:3px 10px;border:1px solid var(--rule-light);cursor:pointer;color:var(--ink-faint);background:var(--paper);transition:all .2s}
+.map-pill.active{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+.map-pill:hover:not(.active){background:var(--paper-warm);color:var(--ink)}
+.reg-bubble{transition:opacity .2s;cursor:pointer}
+.reg-bubble:hover{opacity:1!important;stroke:#1C1A17;stroke-width:1.5}
+
+/* ── SOURCES ── */
+.src-row{display:flex;flex-wrap:wrap;gap:6px;padding:10px 0 2px;border-top:1px solid var(--rule-light)}
+.src-tag{font-family:'IM Fell English',serif;font-style:italic;font-size:11.5px;color:var(--ink-faint);background:var(--paper-warm);border:0.5px solid var(--rule-light);padding:3px 9px}
+</style>
+</head>
+<body>
+<a href="index.html" style="display:block;background:#17202A;color:#fff;font:600 13px/1 system-ui,sans-serif;padding:11px 20px;text-decoration:none">&larr; Back to Dayita Guha's portfolio</a>
+<div class="db">
+
+<!-- ══════════════ MASTHEAD ══════════════ -->
+<div class="masthead">
+  <div class="mh-rule-heavy"></div>
+  <div class="mh-rule-thin"></div>
+  <div class="mh-top">
+    <div class="mh-kicker">Special Investigation · Urban Stress Report 2024</div>
+    <div class="mh-date">April 2026 &nbsp;·&nbsp; CSO · RTB · Census 2022 · Remitly</div>
+  </div>
+  <div class="mh-headline">Is Dublin The Most <span class="stressed">Stressed</span> City?</div>
+  <div class="mh-rule-mid"></div>
+  <div class="mh-deck">
+    <div class="mh-sources">
+      <span>Data: CSO Well-being Survey (SILC)</span>
+      <span>RTB Rent Index</span>
+      <span>Census Commuting Data</span>
+      <span>Remitly Global Stress Index 2024</span>
+    </div>
+    <div class="mh-stamp">#2 Most Stressful City Globally</div>
+  </div>
+  <div class="mh-rule-light"></div>
+</div>
+
+<!-- ══════════════ KPI STRIP ══════════════ -->
+<div class="kpi-strip">
+  <div class="kpi-cell">
+    <div class="kpi-label">Global Stress Rank</div>
+    <div class="kpi-val c-red">#2</div>
+    <div class="kpi-ctx">Score 7.55 / 10 · after New York</div>
+  </div>
+  <div class="kpi-cell">
+    <div class="kpi-label">Dublin Renters: Housing Burden</div>
+    <div class="kpi-val c-red">43%</div>
+    <div class="kpi-ctx">Report costs as "heavy burden" · national avg 18%</div>
+  </div>
+  <div class="kpi-cell">
+    <div class="kpi-label">Rent Growth Since 2015</div>
+    <div class="kpi-val c-amber">+87%</div>
+    <div class="kpi-ctx">Dublin · Ireland avg +41% same period</div>
+  </div>
+  <div class="kpi-cell">
+    <div class="kpi-label">Commute Belt</div>
+    <div class="kpi-val c-blue" style="font-size:22px;padding-top:5px">3 Counties</div>
+    <div class="kpi-ctx">Meath, Kildare, Wicklow bear worst commute burden</div>
+  </div>
+</div>
+
+<!-- ══════════════ ROW 1: MAP · RENT TREND · HOUSING ══════════════ -->
+<div class="sec-div"><div class="sec-lbl">Housing &amp; Rent Pressure</div></div>
+<div class="row-3col">
+
+  <!-- Ireland Map — interactive -->
+  <div class="panel" style="display:flex;flex-direction:column">
+    <div class="panel-title">Ireland Stress Map</div>
+    <div class="panel-sub">Composite index by region</div>
+    <!-- tooltip -->
+    <div id="map-tooltip" style="display:none;background:var(--ink);color:#eee;font-family:'IM Fell English',serif;font-size:11px;padding:7px 10px;position:absolute;z-index:10;pointer-events:none;max-width:160px;line-height:1.5;border-left:3px solid #A32D2D"></div>
+    <!-- SVG map -->
+    <div style="flex:1;position:relative">
+    <svg id="irelandMap" width="100%" viewBox="0 0 188 310" style="display:block;cursor:pointer">
+      <!-- Ireland outline -->
+      <ellipse cx="94" cy="148" rx="72" ry="130" fill="#EDE7D5" stroke="#C8C2B0" stroke-width="0.8"/>
+
+      <!-- stress heat blobs — overall layer (default) -->
+      <g id="layer-overall">
+        <ellipse cx="100" cy="112" rx="52" ry="48" fill="#F09595" stroke="none" opacity="0.7"/>
+        <ellipse cx="106" cy="96" rx="32" ry="26" fill="#E24B4A" stroke="none" opacity="0.85"/>
+      </g>
+      <!-- housing layer -->
+      <g id="layer-housing" style="display:none">
+        <ellipse cx="102" cy="108" rx="56" ry="52" fill="#E24B4A" stroke="none" opacity="0.55"/>
+        <ellipse cx="108" cy="96" rx="34" ry="28" fill="#A32D2D" stroke="none" opacity="0.8"/>
+      </g>
+      <!-- commute layer -->
+      <g id="layer-commute" style="display:none">
+        <ellipse cx="100" cy="110" rx="40" ry="36" fill="#E85D24" stroke="none" opacity="0.65"/>
+        <ellipse cx="106" cy="98" rx="22" ry="18" fill="#A32D2D" stroke="none" opacity="0.85"/>
+      </g>
+      <!-- wellbeing layer -->
+      <g id="layer-wellbeing" style="display:none">
+        <ellipse cx="98" cy="118" rx="62" ry="58" fill="#FAC775" stroke="none" opacity="0.55"/>
+        <ellipse cx="104" cy="102" rx="38" ry="30" fill="#E85D24" stroke="none" opacity="0.65"/>
+        <ellipse cx="108" cy="92" rx="20" ry="16" fill="#E24B4A" stroke="none" opacity="0.75"/>
+      </g>
+
+      <!-- Region bubbles — clickable -->
+      <circle id="reg-dublin" class="reg-bubble" cx="114" cy="90" r="15" fill="#A32D2D" opacity="0.95" data-name="Dublin" data-overall="8.4 / 10" data-housing="9.1 / 10" data-commute="8.8 / 10" data-wellbeing="7.4 / 10"/>
+      <text x="114" y="94" text-anchor="middle" style="font-size:8px;fill:#FAF7EE;font-family:'Bebas Neue',sans-serif;letter-spacing:.05em;pointer-events:none">DUB</text>
+
+      <circle id="reg-meath" class="reg-bubble" cx="86" cy="102" r="11" fill="#E85D24" opacity="0.9" data-name="Meath" data-overall="7.1 / 10" data-housing="7.4 / 10" data-commute="8.2 / 10" data-wellbeing="5.9 / 10"/>
+      <text x="86" y="106" text-anchor="middle" style="font-size:6.5px;fill:#fff;pointer-events:none">MTH</text>
+
+      <circle id="reg-kildare" class="reg-bubble" cx="96" cy="120" r="10" fill="#E85D24" opacity="0.85" data-name="Kildare" data-overall="6.8 / 10" data-housing="7.0 / 10" data-commute="7.6 / 10" data-wellbeing="5.8 / 10"/>
+      <text x="96" y="124" text-anchor="middle" style="font-size:6.5px;fill:#fff;pointer-events:none">KLD</text>
+
+      <circle id="reg-wicklow" class="reg-bubble" cx="122" cy="116" r="9" fill="#EF9F27" opacity="0.85" data-name="Wicklow" data-overall="6.3 / 10" data-housing="6.8 / 10" data-commute="7.0 / 10" data-wellbeing="5.2 / 10"/>
+      <text x="122" y="120" text-anchor="middle" style="font-size:6px;fill:#fff;pointer-events:none">WKL</text>
+
+      <ellipse id="reg-cork" class="reg-bubble" cx="80" cy="210" rx="30" ry="23" fill="#FAC775" opacity="0.8" data-name="Cork" data-overall="5.2 / 10" data-housing="5.8 / 10" data-commute="4.8 / 10" data-wellbeing="5.0 / 10"/>
+      <text x="80" y="213" text-anchor="middle" style="font-size:9px;fill:#633806;font-style:italic;pointer-events:none">Cork</text>
+
+      <ellipse id="reg-clare" class="reg-bubble" cx="50" cy="170" rx="24" ry="20" fill="#C8C2B0" opacity="0.8" data-name="Clare" data-overall="3.8 / 10" data-housing="3.5 / 10" data-commute="3.4 / 10" data-wellbeing="4.4 / 10"/>
+      <text x="50" y="173" text-anchor="middle" style="font-size:8px;fill:#5F5E5A;font-style:italic;pointer-events:none">Clare</text>
+
+      <ellipse id="reg-kerry" class="reg-bubble" cx="56" cy="228" rx="26" ry="18" fill="#C8C2B0" opacity="0.7" data-name="Kerry" data-overall="3.2 / 10" data-housing="3.0 / 10" data-commute="2.9 / 10" data-wellbeing="3.8 / 10"/>
+      <text x="56" y="231" text-anchor="middle" style="font-size:8px;fill:#5F5E5A;font-style:italic;pointer-events:none">Kerry</text>
+
+      <ellipse id="reg-galway" class="reg-bubble" cx="58" cy="132" rx="22" ry="26" fill="#B4B2A9" opacity="0.6" data-name="Galway" data-overall="4.1 / 10" data-housing="4.4 / 10" data-commute="3.8 / 10" data-wellbeing="4.1 / 10"/>
+      <text x="58" y="133" text-anchor="middle" style="font-size:7.5px;fill:#5F5E5A;font-style:italic;pointer-events:none">Galway</text>
+
+      <ellipse id="reg-mayo" class="reg-bubble" cx="60" cy="82" rx="22" ry="22" fill="#B4B2A9" opacity="0.5" data-name="Mayo" data-overall="3.5 / 10" data-housing="3.2 / 10" data-commute="3.1 / 10" data-wellbeing="4.2 / 10"/>
+      <text x="60" y="84" text-anchor="middle" style="font-size:7.5px;fill:#5F5E5A;font-style:italic;pointer-events:none">Mayo</text>
+
+      <ellipse id="reg-sligo" class="reg-bubble" cx="106" cy="60" rx="20" ry="17" fill="#B4B2A9" opacity="0.4" data-name="Sligo" data-overall="3.3 / 10" data-housing="3.1 / 10" data-commute="2.8 / 10" data-wellbeing="4.0 / 10"/>
+      <text x="106" y="62" text-anchor="middle" style="font-size:7px;fill:#888780;font-style:italic;pointer-events:none">Sligo</text>
+
+      <ellipse id="reg-donegal" class="reg-bubble" cx="90" cy="36" rx="20" ry="18" fill="#B4B2A9" opacity="0.35" data-name="Donegal" data-overall="3.1 / 10" data-housing="2.9 / 10" data-commute="2.6 / 10" data-wellbeing="3.8 / 10"/>
+      <text x="90" y="38" text-anchor="middle" style="font-size:7px;fill:#888780;font-style:italic;pointer-events:none">Donegal</text>
+
+      <!-- Legend -->
+      <rect x="4" y="260" width="10" height="8" rx="1" fill="#A32D2D"/>
+      <text x="17" y="268" style="font-size:8px;fill:#6B6760;font-style:italic">Highest stress</text>
+      <rect x="4" y="273" width="10" height="8" rx="1" fill="#E85D24"/>
+      <text x="17" y="281" style="font-size:8px;fill:#6B6760;font-style:italic">Commuter belt</text>
+      <rect x="4" y="286" width="10" height="8" rx="1" fill="#FAC775"/>
+      <text x="17" y="294" style="font-size:8px;fill:#6B6760;font-style:italic">Moderate</text>
+      <rect x="96" y="273" width="10" height="8" rx="1" fill="#B4B2A9"/>
+      <text x="109" y="281" style="font-size:8px;fill:#6B6760;font-style:italic">Low stress</text>
+    </svg>
+    </div>
+    <!-- selected region detail card -->
+    <div id="map-detail" style="display:none;margin-top:8px;border-top:1px solid var(--rule-light);padding-top:8px">
+      <div style="font-family:'Playfair Display',serif;font-weight:700;font-size:13px;color:var(--ink)" id="detail-name"></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-top:6px" id="detail-scores"></div>
+      <div style="font-size:10px;font-style:italic;color:var(--ink-ghost);margin-top:5px;font-family:'IM Fell English',serif">Click another region to compare</div>
+    </div>
+  </div>
+
+  <!-- Rent Trend + Salary/Rent tiles [SWAPPED: was in bottom-right, now row 1] -->
+  <div class="panel">
+    <div style="font-family:'Playfair Display',serif;font-weight:900;font-style:italic;font-size:clamp(13px,1.3vw,16px);color:var(--red);line-height:1.2;margin-bottom:6px;letter-spacing:-.01em">"Dublin rents have nearly doubled since 2015 — and they show no sign of stopping."</div>
+    <div class="panel-title">Rent Index — Dublin vs Ireland Average (2015–2024)</div>
+    <div class="panel-sub">RTB Rent Index · 2015 = 100 baseline</div>
+    <div style="position:relative;width:100%;height:140px">
+      <canvas id="trendChart"></canvas>
+    </div>
+    <div style="display:flex;gap:16px;margin:5px 0 0">
+      <div style="display:flex;align-items:center;gap:5px;font-family:'IM Fell English',serif;font-style:italic;font-size:10px;color:var(--ink-faint)">
+        <div style="width:14px;height:3px;background:#A32D2D;border-radius:1px"></div>Dublin
+      </div>
+      <div style="display:flex;align-items:center;gap:5px;font-family:'IM Fell English',serif;font-style:italic;font-size:10px;color:var(--ink-faint)">
+        <div style="width:14px;height:0;border-top:2px dashed #B4B2A9"></div>Ireland avg
+      </div>
+    </div>
+    <!-- TOP PAY WORST PRESSURE tiles -->
+    <div style="border-top:1px solid var(--rule-light);margin-top:8px;padding-top:8px">
+      <div style="font-family:'Playfair Display',serif;font-weight:900;font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:var(--ink);margin-bottom:6px">Top Pay, Worst Pressure</div>
+      <div class="rs-grid">
+        <div class="rs-tile green">
+          <div class="rs-tile-val">€2,775</div>
+          <div class="rs-tile-lbl">Avg Net Salary (Dublin)<br><em>Highest in Ireland</em></div>
+        </div>
+        <div class="rs-tile orange-t">
+          <div class="rs-tile-val">€2,315</div>
+          <div class="rs-tile-lbl">Avg Monthly Rent (Dublin)<br><em>Highest in Ireland</em></div>
+        </div>
+      </div>
+      <div class="rs-footnote"><strong>Next highest:</strong> Dún Laoghaire 37% &nbsp;·&nbsp; Donegal pays least rent 21%</div>
+    </div>
+  </div>
+
+  <!-- Housing Cost Burden [SWAPPED: was in bottom-right, now row 1 col 3] -->
+  <div class="panel">
+    <div style="font-family:'Playfair Display',serif;font-weight:900;font-style:italic;font-size:clamp(18px,2vw,26px);color:var(--red);line-height:1.15;margin-bottom:8px;letter-spacing:-.02em;border-bottom:2px solid var(--red);padding-bottom:10px">"Nearly half of Dublin renters are financially crushed by housing costs alone."</div>
+    <div class="panel-title">Housing Cost Burden by Group</div>
+    <div class="panel-sub">SILC 2024 · % reporting costs as "heavy burden"</div>
+    <div style="margin-bottom:6px">
+      <span class="pill active" onclick="setView('all',this)">All Groups</span>
+      <span class="pill" onclick="setView('tenure',this)">By Tenure</span>
+      <span class="pill" onclick="setView('region',this)">By Region</span>
+    </div>
+    <div id="housing-bars"></div>
+    <div class="anno"><strong>Dublin renters: 43%</strong> — more than double the national average. The renter bar alone makes the case.</div>
+  </div>
+
+</div>
+
+<!-- ══════════════ ROW 2: COMMUTE TIME + TRANSPORT DONUT ══════════════ -->
+<div class="sec-div"><div class="sec-lbl">Commute Burden</div></div>
+<div class="row-2col">
+
+  <!-- Commute Time Distribution with data labels -->
+  <div class="panel">
+    <div class="panel-title">Dublin Commute Time Distribution</div>
+    <div class="panel-sub">Census 2022 · number of commuters by journey duration</div>
+    <div style="position:relative;width:100%;height:192px">
+      <canvas id="commuteTimeChart"></canvas>
+    </div>
+    <div class="anno red"><strong>Harsh Reality:</strong> Over 60% lose 30+ mins each way daily. The biggest group — <strong>78,000 people</strong> — endure 45–60 min of gridlock. This weekly time theft fuels stress, burnout, and erodes family life.</div>
+  </div>
+
+  <!-- Transport Donut with data labels -->
+  <div class="panel">
+    <div class="panel-title">How Dublin Commutes — Transport Mode Split</div>
+    <div class="panel-sub">Census 2022 · share of commuters by mode of transport</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;align-items:center">
+      <div style="position:relative;height:210px">
+        <canvas id="transportChart"></canvas>
+      </div>
+      <div class="donut-legend" id="donut-legend"></div>
+    </div>
+    <div class="anno"><strong>Half of Dublin Drives — Roads Overloaded Every Day:</strong> With <strong>over 50% commuting by car and public transport</strong>, roads face crushing daily pressure. Too many cars + too many people travelling at once = daily stress. Dublin is the most stressful city to commute in.</div>
+  </div>
+
+</div>
+
+<!-- ══════════════ ROW 3: REMITLY · INDEX CARDS · VERDICT ══════════════ -->
+<div class="sec-div"><div class="sec-lbl">Global Context &amp; Summary</div></div>
+<div class="row-3col-eq">
+
+  <!-- Remitly Global Stress [SWAPPED: was in mid-row col3, now bottom-left] -->
+  <div class="panel">
+    <div class="panel-title">Remitly Global Stress Index — Top Cities</div>
+    <div class="panel-sub">Score out of 10 · housing, commute, cost of living, work hours</div>
+    <div style="margin-top:4px">
+      <div class="bar-r"><div class="bar-lbl hl" style="width:96px;text-align:left">New York</div><div class="bar-track"><div class="bar-fill" style="width:100%;background:#555"></div></div><div class="bar-pct">7.68</div></div>
+      <div class="bar-r"><div class="bar-lbl hl" style="width:96px;text-align:left;color:var(--red)">Dublin</div><div class="bar-track"><div class="bar-fill" style="width:98%;background:var(--red)"></div></div><div class="bar-pct hl">7.55</div></div>
+      <div class="bar-r"><div class="bar-lbl" style="width:96px;text-align:left">San Francisco</div><div class="bar-track"><div class="bar-fill" style="width:90%;background:#E24B4A"></div></div><div class="bar-pct">6.94</div></div>
+      <div class="bar-r"><div class="bar-lbl" style="width:96px;text-align:left">London</div><div class="bar-track"><div class="bar-fill" style="width:84%;background:#F09595"></div></div><div class="bar-pct">6.48</div></div>
+      <div class="bar-r"><div class="bar-lbl" style="width:96px;text-align:left">Sydney</div><div class="bar-track"><div class="bar-fill" style="width:76%;background:#FAC775"></div></div><div class="bar-pct">5.83</div></div>
+      <div class="bar-r"><div class="bar-lbl" style="width:96px;text-align:left">Amsterdam</div><div class="bar-track"><div class="bar-fill" style="width:56%;background:#C8C2B0"></div></div><div class="bar-pct">4.31</div></div>
+    </div>
+    <div class="anno"><strong>Only New York outranks Dublin</strong> — by just 0.13 points. Dublin punches far above its size, driven by housing costs and commute burden that rival megacities.</div>
+    <div style="border-top:2px solid var(--ink);border-bottom:1px solid var(--rule-light);margin-top:14px;padding:12px 0 10px">
+      <div style="font-family:'Bebas Neue',sans-serif;font-size:10px;letter-spacing:.2em;color:var(--ink-faint);margin-bottom:6px">Special Report</div>
+      <div style="font-family:'Playfair Display',serif;font-weight:900;font-size:clamp(15px,1.6vw,19px);line-height:1.18;color:var(--ink);letter-spacing:-.015em">"A City That Charges World-City Prices<br>on a Small-City Salary."</div>
+      <div style="font-family:'IM Fell English',serif;font-style:italic;font-size:11.5px;color:var(--ink-faint);line-height:1.55;margin-top:8px">Dublin scores higher than London, San Francisco and Sydney — cities with economies four times its size. The culprit is not wages but what those wages must cover: rent that has doubled in a decade and a commute that steals an hour a day.</div>
+    </div>
+  </div>
+
+  <!-- Irish Stress Index [SWAPPED: was in bottom-left, now bottom-mid] -->
+  <div class="panel" style="display:flex;flex-direction:column">
+    <div class="panel-title">Irish Stress Index — Composite Score (0–10)</div>
+    <div class="panel-sub">Housing 30% · Commute 30% · Wellbeing 40% · normalised</div>
+    <div class="idx-grid">
+      <div class="idx-card" style="background:#FCEBEB;border-color:#F7C1C1">
+        <div class="idx-num" style="color:#A32D2D">8.4</div>
+        <div class="idx-lbl" style="color:#791F1F">Dublin<br>renters</div>
+      </div>
+      <div class="idx-card" style="background:#FAECE7;border-color:#F5C4B3">
+        <div class="idx-num" style="color:#993C1D">7.1</div>
+        <div class="idx-lbl" style="color:#712B13">Meath</div>
+      </div>
+      <div class="idx-card" style="background:#FDF3DC;border-color:#FAC775">
+        <div class="idx-num" style="color:#854F0B">6.8</div>
+        <div class="idx-lbl" style="color:#633806">Kildare</div>
+      </div>
+      <div class="idx-card" style="background:#FCEBEB;border-color:#F7C1C1">
+        <div class="idx-num" style="color:#E24B4A">6.3</div>
+        <div class="idx-lbl" style="color:#791F1F">Dublin<br>(all)</div>
+      </div>
+      <div class="idx-card" style="background:var(--paper-warm);border-color:var(--rule-light)">
+        <div class="idx-num" style="color:#888780">3.1</div>
+        <div class="idx-lbl" style="color:#5F5E5A">Connacht<br>avg</div>
+      </div>
+    </div>
+    <div class="anno" style="margin-top:10px"><strong>Dublin renters score 8.4/10</strong> — most stressed in Ireland, nearly 3× the Connacht average.</div>
+    <!-- Verdict lives here, pushed to bottom -->
+    <div style="flex:1;display:flex;flex-direction:column;justify-content:flex-end;margin-top:10px">
+    <div class="verdict">
+      <div class="verdict-hed">The Verdict</div>
+      <div class="verdict-row"><div class="v-dot" style="background:#E24B4A"></div><div class="v-text"><strong>Housing:</strong> Dublin renters at 2.4× the national burden rate — highest in Ireland.</div></div>
+      <div class="verdict-row"><div class="v-dot" style="background:#E85D24"></div><div class="v-text"><strong>Commute:</strong> 78,000 Dubliners endure 45–60 min daily gridlock. Over half drive, flooding already-overloaded roads.</div></div>
+      <div class="verdict-row"><div class="v-dot" style="background:#EF9F27"></div><div class="v-text"><strong>Rents:</strong> Up 87% since 2015 — double the national pace. At €2,315/mo, rent consumes 83% of avg take-home pay.</div></div>
+      <div class="verdict-row"><div class="v-dot" style="background:#fff"></div><div class="v-text"><strong>Composite:</strong> Dublin renters score 8.4/10 — the most stressed cohort in the country, globally ranked #2.</div></div>
+    </div>
+    </div>
+  </div>
+
+  <!-- Column filler — editorial pull-quote style -->
+  <div class="panel" style="display:flex;flex-direction:column;justify-content:center;background:var(--ink);border-color:var(--ink)">
+    <div style="border-top:3px solid #A32D2D;border-bottom:1px solid #444;padding:18px 0 14px;margin-bottom:16px">
+      <div style="font-family:'Playfair Display',serif;font-style:italic;font-weight:700;font-size:clamp(20px,2.5vw,30px);color:#F5F0E4;line-height:1.2;letter-spacing:-.01em">"83 cents of every euro earned goes straight to rent."</div>
+    </div>
+    <div style="font-family:'IM Fell English',serif;font-style:italic;font-size:11px;color:#888;line-height:1.6">
+      At an average net salary of <strong style="color:#eee">€2,775</strong> and average Dublin rent of <strong style="color:#eee">€2,315</strong>, the arithmetic is brutal. No European capital of comparable size comes close.
+    </div>
+    <div style="margin-top:16px;border-top:1px solid #333;padding-top:12px">
+      <div style="font-family:'Bebas Neue',sans-serif;font-size:10px;letter-spacing:.18em;color:#555;margin-bottom:8px">Stress by the numbers</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+        <div style="text-align:center;border:1px solid #333;padding:8px 4px">
+          <div style="font-family:'Playfair Display',serif;font-weight:900;font-size:22px;color:#E24B4A;line-height:1">7.55</div>
+          <div style="font-family:'IM Fell English',serif;font-style:italic;font-size:9px;color:#666;margin-top:2px">Global stress score</div>
+        </div>
+        <div style="text-align:center;border:1px solid #333;padding:8px 4px">
+          <div style="font-family:'Playfair Display',serif;font-weight:900;font-size:22px;color:#EF9F27;line-height:1">+87%</div>
+          <div style="font-family:'IM Fell English',serif;font-style:italic;font-size:9px;color:#666;margin-top:2px">Rent rise since 2015</div>
+        </div>
+        <div style="text-align:center;border:1px solid #333;padding:8px 4px">
+          <div style="font-family:'Playfair Display',serif;font-weight:900;font-size:22px;color:#E85D24;line-height:1">78k</div>
+          <div style="font-family:'IM Fell English',serif;font-style:italic;font-size:9px;color:#666;margin-top:2px">45–60 min commuters</div>
+        </div>
+        <div style="text-align:center;border:1px solid #333;padding:8px 4px">
+          <div style="font-family:'Playfair Display',serif;font-weight:900;font-size:22px;color:#FAC775;line-height:1">43%</div>
+          <div style="font-family:'IM Fell English',serif;font-style:italic;font-size:9px;color:#666;margin-top:2px">Renters housing-burdened</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ══════════════ SOURCES ══════════════ -->
+<div class="src-row">
+  <span class="src-tag">CSO SILC 2024 — housing burden + financial wellbeing</span>
+  <span class="src-tag">Census 2022 Profile 7 — commute by county &amp; mode</span>
+  <span class="src-tag">RTB Rent Index 2015–2024</span>
+  <span class="src-tag">Composite index: Housing 30% · Commute 30% · Wellbeing 40%</span>
+  <span class="src-tag">Remitly Global Stress Index 2024</span>
+</div>
+
+</div><!-- /db -->
+
+<script>
+/* ═══ RENT TREND ═══ */
+new Chart(document.getElementById('trendChart'),{
+  type:'line',
+  data:{
+    labels:['2015','2016','2017','2018','2019','2020','2021','2022','2023','2024'],
+    datasets:[
+      {label:'Dublin',data:[100,108,118,133,147,142,150,168,182,187],
+       borderColor:'#A32D2D',backgroundColor:'rgba(163,45,45,0.07)',
+       borderWidth:2.5,pointRadius:3,pointBackgroundColor:'#A32D2D',tension:0.35,fill:true},
+      {label:'Ireland avg',data:[100,105,111,119,128,126,130,140,148,141],
+       borderColor:'#9A9690',borderWidth:1.5,borderDash:[5,4],
+       pointRadius:2,pointBackgroundColor:'#9A9690',tension:0.35,fill:false}
+    ]
+  },
+  options:{
+    responsive:true,maintainAspectRatio:false,
+    plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>`${c.dataset.label}: ${c.parsed.y}`}}},
+    scales:{
+      x:{ticks:{font:{size:11,family:'Georgia'},color:'#9A9690',autoSkip:false,maxRotation:0},grid:{display:false}},
+      y:{ticks:{font:{size:11,family:'Georgia'},color:'#9A9690'},grid:{color:'rgba(28,26,23,0.06)'},min:90,max:200}
+    }
+  }
+});
+
+/* ═══ HOUSING FILTER ═══ */
+const housingData={
+  all:[
+    {label:'Dublin renters',pct:43,color:'#A32D2D',hl:true},
+    {label:'Dublin (all)',pct:31,color:'#E24B4A',hl:false},
+    {label:'Leinster',pct:20,color:'#F09595',hl:false},
+    {label:'National avg',pct:18,color:'#C8C2B0',hl:false},
+    {label:'Munster',pct:14,color:'#C8C2B0',hl:false},
+    {label:'Connacht',pct:10,color:'#C8C2B0',hl:false}
+  ],
+  tenure:[
+    {label:'Renting',pct:43,color:'#A32D2D',hl:true},
+    {label:'Mortgage',pct:22,color:'#E24B4A',hl:false},
+    {label:'Owner outright',pct:8,color:'#C8C2B0',hl:false}
+  ],
+  region:[
+    {label:'Dublin',pct:31,color:'#A32D2D',hl:true},
+    {label:'Mid-East',pct:24,color:'#E24B4A',hl:false},
+    {label:'Mid-West',pct:18,color:'#F09595',hl:false},
+    {label:'South-East',pct:16,color:'#C8C2B0',hl:false},
+    {label:'West',pct:11,color:'#C8C2B0',hl:false},
+    {label:'Border',pct:9,color:'#C8C2B0',hl:false}
+  ]
+};
+function setView(key,el){
+  document.querySelectorAll('.pill').forEach(p=>p.classList.remove('active'));
+  el.classList.add('active');
+  const data=housingData[key],max=Math.max(...data.map(d=>d.pct));
+  document.getElementById('housing-bars').innerHTML=data.map(d=>`
+    <div class="bar-r">
+      <div class="bar-lbl${d.hl?' hl':''}">${d.label}</div>
+      <div class="bar-track"><div class="bar-fill" style="width:${Math.round(d.pct/max*96)}%;background:${d.color}"></div></div>
+      <div class="bar-pct${d.hl?' hl':''}">${d.pct}%</div>
+    </div>`).join('');
+}
+setView('all',document.querySelector('.pill.active'));
+
+/* ═══ COMMUTE TIME BAR + DATA LABELS ═══ */
+const topLabelsPlugin={
+  id:'topLabels',
+  afterDatasetsDraw(chart){
+    if(chart.config.type!=='bar')return;
+    const{ctx}=chart;
+    ctx.save();
+    chart.data.datasets.forEach((ds,di)=>{
+      chart.getDatasetMeta(di).data.forEach((bar,i)=>{
+        const val=ds.data[i];
+        ctx.fillStyle='#1C1A17';
+        ctx.font="700 10px 'Playfair Display',Georgia,serif";
+        ctx.textAlign='center';ctx.textBaseline='bottom';
+        ctx.fillText((val/1000).toFixed(0)+'k',bar.x,bar.y-3);
+      });
+    });
+    ctx.restore();
+  }
+};
+Chart.register(topLabelsPlugin);
+
+new Chart(document.getElementById('commuteTimeChart'),{
+  type:'bar',
+  data:{
+    labels:['Under 15 mins','15–30 mins','30–45 mins','45–60 mins','60+ mins'],
+    datasets:[{
+      label:'Commuters',
+      data:[52000,39000,52000,78000,26000],
+      backgroundColor:['#C8C2B0','#F09595','#E24B4A','#A32D2D','#E85D24'],
+      borderRadius:2,borderSkipped:false
+    }]
+  },
+  options:{
+    responsive:true,maintainAspectRatio:false,
+    layout:{padding:{top:24}},
+    plugins:{
+      legend:{display:false},
+      tooltip:{callbacks:{label:c=>`${c.parsed.y.toLocaleString()} people`}}
+    },
+    scales:{
+      x:{ticks:{font:{size:11,family:'Georgia'},color:'#9A9690',maxRotation:12},grid:{display:false}},
+      y:{ticks:{font:{size:11,family:'Georgia'},color:'#9A9690',callback:v=>v>=1000?(v/1000)+'k':v},
+         grid:{color:'rgba(28,26,23,0.06)'},beginAtZero:true}
+    }
+  }
+});
+
+/* ═══ IRELAND STRESS MAP INTERACTIVITY ═══ */
+const mapLayers=['overall','housing','commute','wellbeing'];
+let currentMapLayer='overall';
+
+function setMap(layer, btn){
+  currentMapLayer=layer;
+  // toggle pills
+  document.querySelectorAll('.map-pill').forEach(p=>p.classList.remove('active'));
+  btn.classList.add('active');
+  // toggle heat layers
+  mapLayers.forEach(l=>{
+    const el=document.getElementById('layer-'+l);
+    if(el) el.style.display=(l===layer)?'block':'none';
+  });
+  // update selected detail if visible
+  const detailEl=document.getElementById('map-detail');
+  if(detailEl.style.display!=='none'){
+    const activeReg=document.querySelector('.reg-bubble.selected');
+    if(activeReg) showDetail(activeReg);
+  }
+}
+
+function showDetail(el){
+  const name=el.dataset.name;
+  const scores={
+    'Overall': el.dataset.overall,
+    'Housing': el.dataset.housing,
+    'Commute': el.dataset.commute,
+    'Wellbeing': el.dataset.wellbeing
+  };
+  const colors={'Overall':'#A32D2D','Housing':'#E85D24','Commute':'#E24B4A','Wellbeing':'#854F0B'};
+  document.getElementById('detail-name').textContent=name+' — Stress Scores';
+  document.getElementById('detail-scores').innerHTML=Object.entries(scores).map(([k,v])=>`
+    <div style="border:1px solid var(--rule-light);padding:5px 8px;text-align:center;background:var(--paper-warm)">
+      <div style="font-family:'Playfair Display',serif;font-weight:900;font-size:15px;color:${colors[k]};line-height:1">${v}</div>
+      <div style="font-family:'IM Fell English',serif;font-size:10px;color:var(--ink-ghost);font-style:italic">${k}</div>
+    </div>`).join('');
+  document.getElementById('map-detail').style.display='block';
+}
+
+document.querySelectorAll('.reg-bubble').forEach(el=>{
+  el.addEventListener('click',function(e){
+    e.stopPropagation();
+    document.querySelectorAll('.reg-bubble').forEach(b=>b.classList.remove('selected'));
+    this.classList.add('selected');
+    showDetail(this);
+  });
+});
+document.getElementById('irelandMap').addEventListener('click',function(e){
+  if(e.target===this||e.target.tagName==='svg'){
+    document.getElementById('map-detail').style.display='none';
+    document.querySelectorAll('.reg-bubble').forEach(b=>b.classList.remove('selected'));
+  }
+});
+
+const tLabels=['Private Car','Cab','Bus','Train/DART/LUAS','Walking','Cycling','Work from home','Other'];
+const tData=[77500,20000,39500,18000,46500,26600,25000,5000];
+const tColors=['#A32D2D','#C05800','#E24B4A','#EF9F27','#C8C2B0','#9A9690','#EDE7D5','#6B6760'];
+const total=tData.reduce((a,b)=>a+b,0);
+
+// Build legend
+const leg=document.getElementById('donut-legend');
+tLabels.forEach((l,i)=>{
+  const pct=((tData[i]/total)*100).toFixed(1);
+  const div=document.createElement('div');
+  div.className='dl-item';
+  div.innerHTML=`<div class="dl-dot" style="background:${tColors[i]}"></div><span>${l}<br><strong style="color:var(--ink);font-style:normal">${pct}%</strong></span>`;
+  leg.appendChild(div);
+});
+
+const donutLabelPlugin={
+  id:'donutLabels',
+  afterDatasetsDraw(chart){
+    if(chart.config.type!=='doughnut')return;
+    const{ctx}=chart;
+    ctx.save();
+    chart.data.datasets.forEach((ds,di)=>{
+      const tot=ds.data.reduce((a,b)=>a+b,0);
+      chart.getDatasetMeta(di).data.forEach((arc,i)=>{
+        const pct=(ds.data[i]/tot)*100;
+        if(pct<5)return;
+        const angle=(arc.startAngle+arc.endAngle)/2;
+        const r=(arc.outerRadius+arc.innerRadius)/2;
+        const x=arc.x+Math.cos(angle)*r;
+        const y=arc.y+Math.sin(angle)*r;
+        ctx.fillStyle='#1C1A17';
+        ctx.font="700 10px 'Playfair Display',Georgia,serif";
+        ctx.textAlign='center';ctx.textBaseline='middle';
+        ctx.fillText(pct.toFixed(1)+'%',x,y);
+      });
+    });
+    ctx.restore();
+  }
+};
+Chart.register(donutLabelPlugin);
+
+new Chart(document.getElementById('transportChart'),{
+  type:'doughnut',
+  data:{
+    labels:tLabels,
+    datasets:[{data:tData,backgroundColor:tColors,borderColor:'#FAF7EE',borderWidth:2,hoverOffset:6}]
+  },
+  options:{
+    responsive:true,maintainAspectRatio:false,
+    cutout:'55%',
+    plugins:{
+      legend:{display:false},
+      tooltip:{callbacks:{label:c=>`${c.label}: ${c.parsed.toLocaleString()} (${((c.parsed/total)*100).toFixed(1)}%)`}}
+    }
+  }
+});
+</script>
+</body>
+</html>
